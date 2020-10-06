@@ -4,6 +4,16 @@ declare(strict_types=1);
 
 namespace GildedRose;
 
+use GildedRose\enum\ItemName;
+use GildedRose\strategies\CheeseStrategy;
+use GildedRose\strategies\ConcertTicketStrategy;
+use GildedRose\strategies\ExpirationDateStrategy;
+
+define('MAX_NORMAL_ITEM_QUALITY', 50);
+define('MIN_NORMAL_ITEM_QUALITY', 0);
+define('MAX_LEGENDARY_ITEM_QUALITY', 80);
+define('MIN_LEGENDARY_ITEM_QUALITY', 80);
+
 final class GildedRose
 {
     /**
@@ -18,51 +28,33 @@ final class GildedRose
 
     public function updateQuality(): void
     {
+        $strategy = null;
+
         foreach ($this->items as $item) {
-            if ($item->name != 'Aged Brie' and $item->name != 'Backstage passes to a TAFKAL80ETC concert') {
-                if ($item->quality > 0) {
-                    if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                        $item->quality = $item->quality - 1;
-                    }
-                }
-            } else {
-                if ($item->quality < 50) {
-                    $item->quality = $item->quality + 1;
-                    if ($item->name == 'Backstage passes to a TAFKAL80ETC concert') {
-                        if ($item->sell_in < 11) {
-                            if ($item->quality < 50) {
-                                $item->quality = $item->quality + 1;
-                            }
-                        }
-                        if ($item->sell_in < 6) {
-                            if ($item->quality < 50) {
-                                $item->quality = $item->quality + 1;
-                            }
-                        }
-                    }
-                }
+            switch ($item->name) {
+
+                case ItemName::AGED_BRIE:
+                    $strategy = new CheeseStrategy();
+                    break;
+
+                case ItemName::BACKSTAGE_PASSES:
+                    $strategy = new ConcertTicketStrategy();
+                    break;
+
+                case ItemName::SULFURAS:
+                    $strategy = null;
+                    break;
+
+                case ItemName::CONJURED:
+                    $strategy = new ExpirationDateStrategy(2);
+                    break;
+
+                default:
+                    $strategy = new ExpirationDateStrategy();
             }
 
-            if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                $item->sell_in = $item->sell_in - 1;
-            }
-
-            if ($item->sell_in < 0) {
-                if ($item->name != 'Aged Brie') {
-                    if ($item->name != 'Backstage passes to a TAFKAL80ETC concert') {
-                        if ($item->quality > 0) {
-                            if ($item->name != 'Sulfuras, Hand of Ragnaros') {
-                                $item->quality = $item->quality - 1;
-                            }
-                        }
-                    } else {
-                        $item->quality = $item->quality - $item->quality;
-                    }
-                } else {
-                    if ($item->quality < 50) {
-                        $item->quality = $item->quality + 1;
-                    }
-                }
+            if ($strategy) {
+                $strategy->alter($item);
             }
         }
     }
