@@ -15,13 +15,11 @@ class CheeseStrategy implements QualityAlterationStrategy
     {
         $item->sell_in--;
 
-        $operand = 1;
+        $item->quality++;
 
         if ($item->sell_in < 0) {
-            $operand = 2;
+            $item->quality++;
         }
-
-        $item->quality += $operand;
 
         //check
         if ($item->quality > MAX_NORMAL_ITEM_QUALITY) {

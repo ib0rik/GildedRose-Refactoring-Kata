@@ -18,15 +18,15 @@ class ConcertTicketStrategy implements QualityAlterationStrategy
             return;
         }
 
-        $operand = 1;
+        $item->quality++;
 
-        if ($item->sell_in < 5) {
-            $operand = 3;
-        } elseif ($item->sell_in < 10) {
-            $operand = 2;
+        if ($item->sell_in < 10) {
+            $item->quality++;
         }
-
-        $item->quality += $operand;
+        
+        if ($item->sell_in < 5) {
+            $item->quality++;
+        }
 
         //check
         if ($item->quality > MAX_NORMAL_ITEM_QUALITY) {
